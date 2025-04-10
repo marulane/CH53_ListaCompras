@@ -10,11 +10,15 @@ const precioTotal = document.getElementById("precioTotal"); //precio total de la
 let tablaListaCompras = document.getElementById("tablaListaCompras");
 //Accediendo a el cuerpo de la tabla seleccionada arriba
 const cuerpoTabla = tablaListaCompras.getElementsByTagName("tBody").item(0);
+const btnClear = document.getElementById("btnClear"); //Boton para limpiar
+
 
 //Numeración de la primera columna de la table
 let cont = 0;
 let costoTotal=0;
 let totalEnProductos = 0;
+
+let datos = new Array(); //Almacena los elementos de la tabla
 
 function validarCantidad(){
     if(txtNumber.value.trim().length<=0){
@@ -74,6 +78,18 @@ btnAgregar.addEventListener("click", function(event){
                         <td>${txtNumber.value}</td>
                         <td>${precio}</td>
                     </tr>`;
+
+        let elemento =  { //Creando OBJETO con notación JSON (clave, valor) a partir de los datos de la tabla
+                            "cont" : cont,
+                            "nombre" : txtName,
+                            "cantidad" : txtNumber,
+                            "precio" : precio 
+                        };
+        datos.push(elemento);
+        //Almacenando el elemento al localstorage
+        localStorage.setItem("datos", JSON.stringify(datos));
+        
+
         cuerpoTabla.insertAdjacentHTML("beforeend", row);
         costoTotal += precio * Number(txtNumber.value);
         precioTotal.innerText = "$ " + costoTotal.toFixed(2);
@@ -83,7 +99,14 @@ btnAgregar.addEventListener("click", function(event){
 
         contadorProductos.innerText = cont;
 
-
+        //Crear el OBJETO despues de la asignacion de sus valores
+        let resumen =   { //Creando objeto para resumen de compra
+            "cont": cont,
+            "totalEnProductos": totalEnProductos,
+            "costoTotal": costoTotal
+        }
+        //Almacenando resumen al localstorage
+        localStorage.setItem("resumen", JSON.stringify(resumen));
 
         //Limpia los campos después de agregarlos a la tabla
         txtName.value="";
@@ -93,3 +116,48 @@ btnAgregar.addEventListener("click", function(event){
     }
     
 })//btnAgregar
+
+
+window.addEventListener("load", function(event){
+    event.preventDefault();
+
+    if(this.localStorage.getItem("datos")!=null){
+        datos = JSON.parse(this.localStorage.getItem("datos"));
+    }
+
+    if(this.localStorage.getItem("resumen")!=null){
+        let resumen = JSON.parse(this.localStorage.getItem("resumen"));
+        costoTotal = resumen.costoTotal;
+        totalEnProductos = resumen.totalEnProductos;
+        cont = resumen.cont;
+
+    }//resumen != null
+
+        precioTotal.innerText = "$ "+ costoTotal.toFixed(2);
+        productosTotal.innerText = totalEnProductos;
+        contadorProductos.innerText = cont;
+});
+
+// funcion para limpiar todo (resumen, datos, campo y agregar alerta)
+
+btnClear.addEventListener("click", function(event){
+    //no usar clear
+    event.preventDefault();
+    localStorage.removeItem("datos");
+    localStorage.removeItem("resumen");
+
+    productosTotal.innerText = 0;
+    precioTotal.innerText ="$ " + 0.00;
+    contadorProductos.innerText = 0;
+    cuerpoTabla.innerHTML="";
+        txtName.value="";
+        txtNumber.value="";
+        txtName.focus();
+
+    //Limpiando formatos de alerta e input
+    txtName.style.border=""; //sin estilo para nombre
+    txtNumber.style.border=""; //sin estilo para cantidad
+    alertValidacionesTexto.innerHTML="" //sin mensaje
+    alertValidaciones.style.display="none";  //oculto
+
+});
