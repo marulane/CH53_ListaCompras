@@ -154,6 +154,10 @@ btnClear.addEventListener("click", function(event){
         txtNumber.value="";
         txtName.focus();
 
+    cont = 0;
+    costoTotal=0;
+    totalEnProductos = 0;
+
     //Limpiando formatos de alerta e input
     txtName.style.border=""; //sin estilo para nombre
     txtNumber.style.border=""; //sin estilo para cantidad
